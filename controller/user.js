@@ -2,7 +2,8 @@ const User = require("../models/User");
 const bcrypt = require("bcrypt");
 const { createError } = require("../utils/error");
 const jwt = require("jsonwebtoken");
-// const { APP_host } = require("../middleware/dataconfig");
+const CrudServices = require("../utils/crudServices");
+const pick = require("../utils/pick");
 require('dotenv').config();
 
 module.exports = {
@@ -11,9 +12,13 @@ module.exports = {
    //////////////// request to create user /////////////////
    async addUser(req, res, next) {
       try {
-         createError
+         // createError
+         let email = req.body.email
          const checkuser = await User.findOne({ 
-            email: req.body.email
+            email: {
+               $regex: '^' + email + '$',
+               $options: 'i',
+             },
           })
          if (checkuser) {
             return next(createError(404, "A user with this email already exist"))
@@ -69,15 +74,32 @@ module.exports = {
    /////////////////////////////////////////////////////////////////////////////////////
 
    ///////////// get all user /////////////////
-   async getAll(req, res, next) {
+   async getAllByBusinessLocation(req, res, next) {
       try {
-         const findUser = await User.find()
-         return res.status(200).json({
-            success: true,
-            message: "ALL users",
-            status: 200,
-            data: findUser
-         })
+         // const findUser = await User.find()
+         const options = pick(req.body, ["limit", "page"]);
+         const findUser = await CrudServices.getList(User,{},options)
+         if (findUser && findUser.results) {
+            let users = findUser.results.map(user => {
+               const { password, isAdmin, ...userData } = user._doc;
+               return userData;
+           });
+           findUser.results=users
+            return res.status(200).json({
+               success: true,
+               message: "ALL users",
+               status: 200,
+               data: findUser
+            })
+         }
+         else {
+            return res.status(200).json({
+               success: true,
+               message: "ALL users",
+               status: 200,
+               data: findUser
+            })
+         }
       }
       catch (error) {
          next(error)

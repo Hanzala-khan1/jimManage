@@ -4,7 +4,7 @@ const Router = require("express").Router();
 
 Router.post("/addUser", controller.addUser);
 Router.post("/loginUser", controller.login);
-Router.get("/getAll", controller.getAll);
+Router.get("/getAllBusinessUser", controller.getAllByBusinessLocation);
 Router.get("/getOne/:id", controller.getOne);
 Router.delete("/deleteUser/:id", controller.deleteUser);
 Router.put("/updateUser/:id", controller.updateUser);

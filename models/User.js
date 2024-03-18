@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const mongoosePaginate = require('mongoose-paginate-v2');
+const mongoosePaginate = require('./plugin/model.paginate');
 
 const userSchema = new mongoose.Schema({
     name: {
@@ -13,7 +13,7 @@ const userSchema = new mongoose.Schema({
     },
     Business:{
         type: String,
-        required: true,
+        required: false,
     },
     email: {
         type: String,
@@ -31,6 +31,11 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
         default: "https://icon-library.com/images/no-profile-pic-icon/no-profile-pic-icon-11.jpg"
+    },
+    status: {
+        type: String,
+        required: false,
+        enum: ["active", "archived"]
     },
     isAdmin: {
         type: Boolean,
