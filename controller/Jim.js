@@ -1,9 +1,9 @@
 const Jim = require("../models/Jim");
-const bcrypt = require("bcrypt");
 const { createError } = require("../utils/error");
-const jwt = require("jsonwebtoken");
+const User = require("../models/User");
 const CrudServices = require("../utils/crudServices");
 const pick = require("../utils/pick");
+const { AddJIM } = require("../validator/Jim.validor");
 require('dotenv').config();
 
 module.exports = {
@@ -12,20 +12,40 @@ module.exports = {
     //////////////// request to create user /////////////////
     async addBusinessLocation(req, res, next) {
         try {
-            // createError
-            let name = req.body.email
-            const checkBusinessLocation = await User.findOne({
+            const { error } = AddJIM.validate(req.body);
+            if (error) {
+                return res.status(400).send({
+                    success: false,
+                    message: error.message,
+                    status: 200,
+                    error: error
+                })
+            }
+            const checkBusinessLocation = await Jim.findOne({
                 name: {
-                    $regex: '^' + name + '$',
+                    $regex: '^' + req.body.name + '$',
                     $options: 'i',
                 },
             })
             if (checkBusinessLocation) {
                 return next(createError(404, "A Jim with this name already exist"))
             }
+            req.body['created_at'] = new Date()
+            req.body['updated_at'] = new Date()
+            // req.body["updated_by"] = req.user.id
+            // let businessLocation = await CrudServices.create(Jim, req.body)
+            let businessLocation = await new Jim(req.body)
 
-            let businessLocation = await CrudServices.create(Jim, req.body)
+            req.body["BusinessLocation"] = businessLocation._id.toString()
 
+            let user = await new User(req.body)
+
+            businessLocation['Owner'] = user._id.toString()
+            businessLocation['created_by'] = user._id.toString()
+
+            businessLocation.save()
+
+            user.save()
             return res.status(200).send({
                 success: true,
                 message: "registered",
@@ -44,12 +64,12 @@ module.exports = {
             // const findUser = await User.find()
             const options = pick(req.body, ["limit", "page"]);
             const businessLocation = await CrudServices.getList(Jim, {}, options)
-                return res.status(200).json({
-                    success: true,
-                    message: "ALL users",
-                    status: 200,
-                    data: businessLocation
-                })
+            return res.status(200).json({
+                success: true,
+                message: "ALL users",
+                status: 200,
+                data: businessLocation
+            })
         }
         catch (error) {
             next(error)

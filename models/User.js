@@ -2,18 +2,14 @@ const mongoose = require("mongoose");
 const mongoosePaginate = require('./plugin/model.paginate');
 
 const userSchema = new mongoose.Schema({
-    name: {
+    full_name: {
         type: String,
         required: true,
     },
-    BusinessLocation:{
+    BusinessLocation: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Jim',
         required: false
-    },
-    Business:{
-        type: String,
-        required: false,
     },
     email: {
         type: String,
@@ -24,18 +20,23 @@ const userSchema = new mongoose.Schema({
         required: true,
     },
     phone: {
-        type: Number,
+        type: String,
         required: true,
     },
     image: {
         type: String,
-        required: true,
         default: "https://icon-library.com/images/no-profile-pic-icon/no-profile-pic-icon-11.jpg"
+    },
+    city: {
+        type: String,
+    },
+    adress: {
+        type: String,
     },
     status: {
         type: String,
         required: false,
-        enum: ["active", "archived"]
+        enum: ["active", "inactive", "blocked"]
     },
     isAdmin: {
         type: Boolean,

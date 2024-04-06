@@ -1,9 +1,11 @@
 const User = require("../models/User");
 const bcrypt = require("bcrypt");
+const Joi = require('joi');
 const { createError } = require("../utils/error");
 const jwt = require("jsonwebtoken");
 const CrudServices = require("../utils/crudServices");
 const pick = require("../utils/pick");
+const { Adduser, UpdateUser } = require("../validator/user.validation");
 require('dotenv').config();
 
 module.exports = {
@@ -13,13 +15,22 @@ module.exports = {
    async addUser(req, res, next) {
       try {
          // createError
+         const { error } = Adduser.validate(req.body);
+         if (error) {
+            return res.status(200).send({
+               success: false,
+               message: error.message,
+               status: 200,
+               error: error
+            })
+         }
          let email = req.body.email
-         const checkuser = await User.findOne({ 
+         const checkuser = await User.findOne({
             email: {
                $regex: '^' + email + '$',
                $options: 'i',
-             },
-          })
+            },
+         })
          if (checkuser) {
             return next(createError(404, "A user with this email already exist"))
          }
@@ -58,7 +69,12 @@ module.exports = {
          let { isAdmin, password, ...info } = checkuser._doc;
          // info = info._doc;
          const token = await jwt.sign(
-            { id: checkuser._id, isAdmin: checkuser.isAdmin },
+            {
+               id: checkuser._id,
+               isAdmin: checkuser.isAdmin,
+               BusinessLocation: checkuser.BusinessLocation,
+               isJimAdmin: checkuser.isJimAdmin
+            },
             process.env.jwt_secret)
          return res.status(200).send({
             success: true,
@@ -78,13 +94,13 @@ module.exports = {
       try {
          // const findUser = await User.find()
          const options = pick(req.body, ["limit", "page"]);
-         const findUser = await CrudServices.getList(User,{},options)
+         const findUser = await CrudServices.getList(User, {}, options)
          if (findUser && findUser.results) {
             let users = findUser.results.map(user => {
                const { password, isAdmin, ...userData } = user._doc;
                return userData;
-           });
-           findUser.results=users
+            });
+            findUser.results = users
             return res.status(200).json({
                success: true,
                message: "ALL users",
@@ -126,6 +142,15 @@ module.exports = {
    ///////////// get single  user /////////////////
    async updateUser(req, res, next) {
       try {
+         const { error } = UpdateUser.validate(req.body);
+         if (error) {
+            return res.status(200).send({
+               success: false,
+               message: error.message,
+               status: 200,
+               error: error
+            })        
+          }
          const updateUs = await User.findOneAndUpdate(
             { _id: req.params.id },
             { $set: req.body },

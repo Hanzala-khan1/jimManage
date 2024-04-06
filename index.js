@@ -29,6 +29,7 @@ app.use(cors());
 
 //////////// routes /////////////
 app.use("/v1/user", require("./routes/user.js"));
+app.use("/v1/Jim", require("./routes/jim.js"));
 
 
 

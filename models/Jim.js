@@ -12,15 +12,13 @@ const JimShema = new mongoose.Schema({
     },
     title: {
         type: String,
-        required: true,
     },
     phone: {
-        type: Number,
+        type: String,
         required: true,
     },
     image: {
         type: String,
-        required: true,
         default: "https://icon-library.com/images/no-profile-pic-icon/no-profile-pic-icon-11.jpg"
     },
     Owner: {
@@ -28,7 +26,21 @@ const JimShema = new mongoose.Schema({
         ref: 'Jim',
         required: false
     },
-    created_at: {
+    description: {
+        type: String,
+        required: false
+    },
+    created_by:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Jim',
+        require,d: false
+    },
+    updated_by:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Jim',
+        required: false
+    },
+    created_at:{
         type: Date,
         default: Date.now()
     },
