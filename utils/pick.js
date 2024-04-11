@@ -14,7 +14,10 @@ const pick = (object, keys) => {
     }, {});
   };
   
+const App_host= "http://localhost:8000/"
   
-  
-  module.exports = pick
+  module.exports = {
+    pick,
+    App_host
+  }
   

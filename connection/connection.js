@@ -4,7 +4,7 @@ const CONNECTION_STRING = process.env.CONNECTION_STRING;
 
 const connect = async () => {
   try {
-    await mongoose.connect("mongodb+srv://umerkhayyam91:emmawatson123@meditourcluster.kuje42d.mongodb.net/?retryWrites=true&w=majority/jimwebsite", {
+    await mongoose.connect("mongodb://127.0.0.1:27017/JimManagment", {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });

@@ -10,6 +10,7 @@ dotenv.config();
 // Middleware
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+app.use(express.static(path.join(__dirname, 'public')));
 // app.use(formidable());
 app.options('*', cors());
 app.use((req, res, next) => {
@@ -28,8 +29,13 @@ app.use(cors());
 
 
 //////////// routes /////////////
-app.use("/v1/user", require("./routes/user.js"));
-app.use("/v1/Jim", require("./routes/jim.js"));
+app.use("/v1/user", require("./routes/User.route.js"));
+app.use("/v1/Jim", require("./routes/Jim.route.js"));
+app.use("/v1/attendence", require("./routes/Attendence.route.js"));
+
+
+////////////// images Route ///////////////////////
+app.use('/profile/images', express.static("./upload/images/"));
 
 
 
