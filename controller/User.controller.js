@@ -37,11 +37,11 @@ module.exports = {
 
          if (req.files && req.files.length) {
             req.files.forEach(element => {
-               req.body['images']=`${App_host}profile/images/${element.filename}`
+               req.body['images'] = `${App_host}profile/images/${element.filename}`
             });
          }
-         req.body.status= "active"
-         
+         req.body.status = "inactive"
+
          const salt = bcrypt.genSaltSync(10)
          const hash = await bcrypt.hashSync(req.body.password, salt)
          let user = new User({
@@ -74,8 +74,11 @@ module.exports = {
          if (!checkpassword) {
             return next(createError(404, "wrong password"))
          }
-         let {password, ...info } = checkuser._doc;
-         // info = info._doc;
+         if (checkuser.status === "inactive") {
+            return next(createError(404, "contact with administration to Approve your Account"))
+         }
+         let { password, ...info } = checkuser._doc;
+
          const token = await jwt.sign(
             {
                id: checkuser._id,
@@ -100,12 +103,35 @@ module.exports = {
    ///////////// get all user /////////////////
    async getAllByBusinessLocation(req, res, next) {
       try {
-         // const findUser = await User.find()
-         const options = pick(req.body, ["limit", "page"]);
-         const findUser = await CrudServices.getList(User, {}, options)
+         let filterdata = req.query;
+         let filter = {
+            isAdmin: false,
+            isJimAdmin: false
+         }
+         if (filterdata.BusinessLocation) {
+            filter["BusinessLocation"] = filterdata.BusinessLocation
+         }
+         if (filterdata.status) {
+            filter["status"] = filterdata.status
+         }
+         if (filterdata.search) {
+            filter["$or"] = [{
+               email: {
+                  $regex: '^' + filterdata.search + '$',
+                  $options: 'i',
+               },
+               full_name: {
+                  $regex: '^' + filterdata.search + '$',
+                  $options: 'i',
+               },
+            }]
+
+         }
+         const options = pick(req.query, ["limit", "page"]);
+         const findUser = await CrudServices.getList(User, filter, options)
          if (findUser && findUser.results) {
             let users = findUser.results.map(user => {
-               const { password, isAdmin, ...userData } = user._doc;
+               const { password, ...userData } = user._doc;
                return userData;
             });
             findUser.results = users
@@ -160,7 +186,7 @@ module.exports = {
             })
          }
          const updateUs = await User.findOneAndUpdate(
-            { _id: req.params.id },
+            { _id: req.query.id },
             { $set: req.body },
             { new: true }
          )
