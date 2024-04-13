@@ -3,7 +3,7 @@ const { upload } = require("../middleware/multer.js");
 const { verifyToken } = require("../utils/varifyToken.js");
 const Router = require("express").Router();
 
-Router.post("/addUser",upload.single("images") ,controller.addUser);
+Router.post("/addUser",upload.array("images") ,controller.addUser);
 Router.post("/loginUser", controller.login);
 Router.get("/getAllBusinessUser",verifyToken, controller.getAllByBusinessLocation);
 Router.get("/getOne/:id", controller.getOne);

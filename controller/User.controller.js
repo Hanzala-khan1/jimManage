@@ -4,7 +4,7 @@ const Joi = require('joi');
 const { createError } = require("../utils/error");
 const jwt = require("jsonwebtoken");
 const CrudServices = require("../utils/crudServices");
-const { pick } = require("../utils/pick");
+const { pick, App_host } = require("../utils/pick");
 const { Adduser, UpdateUser } = require("../validator/user.validation");
 require('dotenv').config();
 
