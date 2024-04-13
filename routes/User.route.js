@@ -8,7 +8,7 @@ Router.post("/loginUser", controller.login);
 Router.get("/getAllBusinessUser",verifyToken, controller.getAllByBusinessLocation);
 Router.get("/getOne/:id", controller.getOne);
 Router.delete("/deleteUser/:id",verifyToken, controller.deleteUser);
-Router.put("/updateUser/:id",verifyToken, controller.updateUser);
+Router.put("/updateUser",verifyToken, controller.updateUser);
 Router.put("/updatePassword/:id", controller.updatePassword);
 // Router.put("/updateImage/:id", controller.updateImage);
 

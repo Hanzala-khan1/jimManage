@@ -5,6 +5,7 @@ const CrudServices = require("../utils/crudServices");
 const { pick, App_host } = require("../utils/pick");
 const { AddJIM } = require("../validator/Jim.validor");
 const { upload } = require("../middleware/multer");
+const bcrypt = require("bcrypt");
 require('dotenv').config();
 
 module.exports = {
@@ -25,6 +26,10 @@ module.exports = {
             })
             if (checkBusinessLocation) {
                 return next(createError(404, "A Jim with this name already exist"))
+            }
+            if (!req.body.status) {
+                req.body["status"] = "inactive"
+
             }
 
             req.body['name'] = req.body.gymName
@@ -49,7 +54,6 @@ module.exports = {
                 return next(createError(404, "A User with this email already exist"))
             }
             req.body["isJimAdmin"] = true
-            req.body["status"] = "active"
 
             const salt = bcrypt.genSaltSync(10)
             const hash = await bcrypt.hashSync(req.body.password, salt)
@@ -80,8 +84,21 @@ module.exports = {
     ///////////// get all Business Location /////////////////
     async getAllBusinessLocation(req, res, next) {
         try {
+            let filterdata = req.query
+            let filter = {}
+            if (filterdata.search) {
+                filter["$or"] = [{
+                    name: {
+                        $regex: '.*' + filterdata.search + '.*',
+                        $options: 'i',
+                    }
+                }]
+            }
+            if (filterdata.status) {
+                filter["status"] = filterdata.status
+            }
             const options = pick(req.query, ["limit", "page"]);
-            const businessLocation = await CrudServices.getList(Jim, {}, options)
+            const businessLocation = await CrudServices.getList(Jim, filter, options)
             return res.status(200).json({
                 success: true,
                 message: "ALL users",

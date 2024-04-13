@@ -100,6 +100,7 @@ const JimActiveUser = async (req, res, next) => {
         });
         const total_user = await User.find({
             BusinessLocation: jimId,
+            status: "active",
         });
 
         const activeUserCount = activeUser.length;

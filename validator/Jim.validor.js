@@ -9,6 +9,7 @@ const AddJIM = Joi.object().keys({
     images: Joi.array().optional().allow(null,""),
     gymName: Joi.string().optional().allow(null,""),
     gymAddress: Joi.string().optional().allow(null,""),
+    adress: Joi.string().optional().allow(null,""),
     city: Joi.string().optional().allow(null,""),
     description: Joi.string().optional().allow(null,""),
     status: Joi.string().optional().valid('active', 'archived'),

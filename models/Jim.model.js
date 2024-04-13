@@ -13,6 +13,9 @@ const JimShema = new mongoose.Schema({
     title: {
         type: String,
     },
+    city: {
+        type: String,
+    },
     phone: {
         type: String,
         required: true,
@@ -29,6 +32,12 @@ const JimShema = new mongoose.Schema({
     description: {
         type: String,
         required: false
+    },
+    status: {
+        type: String,
+        required: false,
+        enum: ["active", "inactive", "blocked"],
+        default: "inactive"
     },
     created_by:{
         type: mongoose.Schema.Types.ObjectId,

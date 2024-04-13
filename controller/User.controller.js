@@ -40,7 +40,9 @@ module.exports = {
                req.body['images'] = `${App_host}profile/images/${element.filename}`
             });
          }
-         req.body.status = "inactive"
+         if (!req.body.status){
+         req.body["status"] = "inactive"
+         }
 
          const salt = bcrypt.genSaltSync(10)
          const hash = await bcrypt.hashSync(req.body.password, salt)
@@ -66,7 +68,7 @@ module.exports = {
    //////////////// login request for user /////////////////
    async login(req, res, next) {
       try {
-         const checkuser = await User.findOne({ email: req.body.email })
+         const checkuser = await User.findOne({ email: req.body.email }).populate("BusinessLocation")
          if (!checkuser) {
             return next(createError(404, "invalid email"))
          }
@@ -117,13 +119,13 @@ module.exports = {
          if (filterdata.search) {
             filter["$or"] = [{
                email: {
-                  $regex: '^' + filterdata.search + '$',
+                  $regex: '.*' + filterdata.search+ '.*',
                   $options: 'i',
-               },
+                },
                full_name: {
-                  $regex: '^' + filterdata.search + '$',
+                  $regex: '.*' +filterdata.search+ '.*',
                   $options: 'i',
-               },
+                },
             }]
 
          }
@@ -186,7 +188,7 @@ module.exports = {
             })
          }
          const updateUs = await User.findOneAndUpdate(
-            { _id: req.query.id },
+            { _id: req.body.id },
             { $set: req.body },
             { new: true }
          )
