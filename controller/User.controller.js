@@ -6,6 +6,9 @@ const jwt = require("jsonwebtoken");
 const CrudServices = require("../utils/crudServices");
 const { pick, App_host } = require("../utils/pick");
 const { Adduser, UpdateUser } = require("../validator/user.validation");
+const { AddTransaction } = require("./expenses.controller");
+const { JimActiveUser } = require("./Attendence.controller");
+const Jim = require("../models/Jim.model");
 require('dotenv').config();
 
 module.exports = {
@@ -21,27 +24,44 @@ module.exports = {
          }
          let email = req.body.email
          const checkuser = await User.findOne({
-            email: {
-               $regex: '^' + email + '$',
-               $options: 'i',
-            },
+            email: email,
+            // 'BusinessLocation.Gym':  req.body.BusinessLocation 
          })
 
-         if (checkuser) {
-            return next(createError(404, "A user with this email already exist"))
-         }
+         // if (checkuser) {
+         //    return next(createError(404, "A user Already Registered"))
+         // }
 
-         if (req.body.BusinessLocation) {
-            req.body.BusinessLocation = [req.body.BusinessLocation]
+         let enrollGym = req.body.BusinessLocation
+
+         if (checkuser && checkuser.BusinessLocation && checkuser.BusinessLocation.length) {
+
+            checkuser.BusinessLocation.push({
+               Gym: enrollGym,
+               package: req.body.package
+            })
+
+            await checkuser.save()
+            return res.status(200).send({
+               success: true,
+               message: "registered",
+               status: 200,
+               data: checkuser
+            })
+
+         } else {
+            req.body["BusinessLocation"] = [{
+               Gym: enrollGym,
+               package: req.body.package
+            }]
          }
 
          if (req.files && req.files.length) {
-            req.files.forEach(element => {
-               req.body['images'] = `${App_host}profile/images/${element.filename}`
-            });
+            let element = req.files[0]
+            req.body['images'] = `${App_host}profile/images/${element.filename}`
          }
-         if (!req.body.status){
-         req.body["status"] = "inactive"
+         if (!req.body.status) {
+            req.body["status"] = "inactive"
          }
 
          const salt = bcrypt.genSaltSync(10)
@@ -51,6 +71,9 @@ module.exports = {
             password: hash
          })
          await user.save()
+
+         await AddTransaction(req.body.package, user._id.toString(), enrollGym, next)
+
          let { password, ...info } = user;
          return res.status(200).send({
             success: true,
@@ -68,7 +91,7 @@ module.exports = {
    //////////////// login request for user /////////////////
    async login(req, res, next) {
       try {
-         const checkuser = await User.findOne({ email: req.body.email }).populate("BusinessLocation")
+         const checkuser = await User.findOne({ email: req.body.email }).populate("BusinessLocation.Gym")
          if (!checkuser) {
             return next(createError(404, "invalid email"))
          }
@@ -111,24 +134,26 @@ module.exports = {
             isJimAdmin: false
          }
          if (filterdata.BusinessLocation) {
-            filter["BusinessLocation"] = filterdata.BusinessLocation
+            filter["BusinessLocation.Gym"] = filterdata.BusinessLocation
          }
          if (filterdata.status) {
             filter["status"] = filterdata.status
          }
          if (filterdata.search) {
-            filter["$or"] = [{
-               email: {
-                  $regex: '.*' + filterdata.search+ '.*',
-                  $options: 'i',
+            filter["$or"] = [
+                {
+                    email: {
+                        $regex: new RegExp('.*' + filterdata.search + '.*', 'i')
+                    }
                 },
-               full_name: {
-                  $regex: '.*' +filterdata.search+ '.*',
-                  $options: 'i',
-                },
-            }]
+                {
+                    full_name: {
+                        $regex: new RegExp('.*' + filterdata.search + '.*', 'i')
+                    }
+                }
+            ];
+        }
 
-         }
          const options = pick(req.query, ["limit", "page"]);
          const findUser = await CrudServices.getList(User, filter, options)
          if (findUser && findUser.results) {
@@ -237,36 +262,68 @@ module.exports = {
          next(error)
       }
    },
-   // async updateImage(req, res, next) {
+   ///////////////////////////
+   async updateUserStatus(req, res, next) {
+      try {
+         const { error } = UpdateUser.validate(req.body);
+         if (error) {
+            return res.status(200).send({
+               success: false,
+               message: error.message,
+               status: 200,
+               error: error
+            })
+         }
+         let status = req.body.status
+         let user = await User.findOne({ _id: req.body.id })
 
-   //    try {
-   //       const img = `${APP_host}profile/${req.file.mimetype.startsWith('image') ? 'images' : 'files'
-   //          }/${req.file.filename}`;
-   //       const updateUserImage = await User.findOneAndUpdate({ _id: req.params.id },
-   //          {
-   //             $set: { image: img }
-   //          }, { new: true })
+         if (!user) {
+            return next(createError(404, "no data found"))
+         } else {
+            if (user.isJimAdmin) {
+               user.status = status
+               let gym = await Jim.findOne({ _id: user.BusinessLocation[0].Gym })
+               if (gym) {
+                  gym.status = status
+                  await gym.save()
+               }
 
-   //       ////////////////////////////
-   //       return res.status(200).json({
-   //          success: true,
-   //          message: "User Image updated",
-   //          status: 200,
-   //          data: updateUserImage
-   //       })
-   //    }
-   //    catch (error) {
-   //       next(error)
-   //    }
-   // },
+            } else {
+               user.status = status
+
+            }
+           await user.save()
+         }
+         return res.status(200).json({
+            success: true,
+            message: "User Data",
+            status: 200,
+            data: user
+         })
+      }
+      catch (error) {
+         next(error)
+      }
+   },
+   /////////////////////////////////////////
    async deleteUser(req, res, next) {
       try {
-         const deleteTAsk = await User.findByIdAndDelete(req.params.id)
+         let user = await User.findOne({ _id: req.body.id })
+         if (!user) {
+            return next(createError(404, "no data found"))
+         } else {
+            if (user.isJimAdmin) {
+               let deleteTAsk = await User.findByIdAndDelete(req.body.id)
+               let deletejim = await Jim.findByIdAndDelete(user.BusinessLocation[0].Gym)
+            } else {
+               let deleteTAsk = await User.findByIdAndDelete(req.body.id)
+            }
+         }
          return res.status(200).send({
             success: true,
             message: "User Deleted",
             status: 200,
-            data: deleteTAsk
+            data: true
          })
       } catch (err) {
          console.log(err)

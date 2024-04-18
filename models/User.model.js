@@ -7,14 +7,22 @@ const userSchema = new mongoose.Schema({
         required: true,
     },
     BusinessLocation: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Jim',
-        required: false
+        Gym: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Jim',
+            required: false
+        },
+        package: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Packages',
+            required: false
+        },
     }],
     email: {
         type: String,
         required: true,
     },
+
     password: {
         type: String,
         required: true,
@@ -38,6 +46,12 @@ const userSchema = new mongoose.Schema({
         required: false,
         enum: ["active", "inactive", "blocked"],
         default: "inactive"
+    },
+    payment_status: {
+        type: String,
+        required: false,
+        enum: ["paid", "unpaid"],
+        default: "paid"
     },
     role: {
         type: String,

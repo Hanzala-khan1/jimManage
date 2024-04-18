@@ -6,6 +6,8 @@ const { pick, App_host } = require("../utils/pick");
 const { AddJIM } = require("../validator/Jim.validor");
 const { upload } = require("../middleware/multer");
 const bcrypt = require("bcrypt");
+const { AddTransaction } = require("./expenses.controller");
+const Packages = require("../models/Packages.model");
 require('dotenv').config();
 
 module.exports = {
@@ -31,7 +33,13 @@ module.exports = {
                 req.body["status"] = "inactive"
 
             }
-
+            let AdminPackage = await Packages.findOne({
+                is_admin_package: true
+            })
+            if (!AdminPackage) {
+                return next(createError(404, "Ask Admin To add Package"))
+            }
+            req.body['package'] = AdminPackage._id.toString()
             req.body['name'] = req.body.gymName
             req.body['adress'] = req.body.gymAddress
 
@@ -46,7 +54,6 @@ module.exports = {
 
             let businessLocation = await new Jim(req.body)
 
-            req.body["BusinessLocation"] = businessLocation._id.toString()
             let userExist = await User.findOne({
                 email: req.body.email
             })
@@ -54,11 +61,18 @@ module.exports = {
                 return next(createError(404, "A User with this email already exist"))
             }
             req.body["isJimAdmin"] = true
-
+            if (req.files && req.files.length) {
+                let element = req.files[0]
+                req.body['images'] = `${App_host}profile/images/${element.filename}`
+            }
+            req.body["BusinessLocation"] = [{
+                Gym: businessLocation._id.toString(),
+                package: req.body.package
+            }]
             const salt = bcrypt.genSaltSync(10)
             const hash = await bcrypt.hashSync(req.body.password, salt)
 
-            let user = new User({
+            let user = await new User({
                 ...req.body,
                 password: hash
             })
@@ -66,9 +80,12 @@ module.exports = {
             businessLocation['Owner'] = user._id.toString()
             businessLocation['created_by'] = user._id.toString()
 
-            businessLocation.save()
+            await businessLocation.save()
 
-            user.save()
+            await user.save()
+
+            await AddTransaction(req.body.package, user._id.toString(), businessLocation._id.toString(), next)
+
             return res.status(200).send({
                 success: true,
                 message: "registered",
@@ -97,6 +114,7 @@ module.exports = {
             if (filterdata.status) {
                 filter["status"] = filterdata.status
             }
+
             const options = pick(req.query, ["limit", "page"]);
             const businessLocation = await CrudServices.getList(Jim, filter, options)
             return res.status(200).json({

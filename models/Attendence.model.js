@@ -24,7 +24,8 @@ const attendanceSchema = new mongoose.Schema(
         },
         total_mint_spend: {
             type: Number,
-            required: false
+            required: false,
+            default:0
         },
         status: {
             type: String,

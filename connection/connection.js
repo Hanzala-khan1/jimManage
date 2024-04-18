@@ -4,6 +4,8 @@ const CONNECTION_STRING = process.env.CONNECTION_STRING;
 
 const connect = async () => {
   try {
+    // await mongoose.connect("mongodb://127.0.0.1:27017/FlexFlow", {
+
     await mongoose.connect("mongodb://127.0.0.1:27017/JimManagment", {
       useNewUrlParser: true,
       useUnifiedTopology: true,

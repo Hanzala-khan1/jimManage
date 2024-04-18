@@ -62,4 +62,6 @@ const JimShema = new mongoose.Schema({
 })
 JimShema.plugin(mongoosePaginate);
 
-module.exports = mongoose.model("Jim", JimShema)
+let Jim = mongoose.model("Jim", JimShema)
+
+module.exports=Jim

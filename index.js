@@ -32,6 +32,8 @@ app.use(cors());
 app.use("/v1/user", require("./routes/User.route.js"));
 app.use("/v1/Jim", require("./routes/Jim.route.js"));
 app.use("/v1/attendence", require("./routes/Attendence.route.js"));
+app.use("/v1/packages", require("./routes/packages.routes.js"));
+app.use("/v1/earning", require("./routes/expense.route.js"));
 
 
 ////////////// images Route ///////////////////////

@@ -6,7 +6,7 @@ const { pick } = require("../utils/pick");
 const createUpdateAttendence = async (req, res, next) => {
     try {
         const userId = req.user.id;
-        let jimId = req.user.BusinessLocation[0];
+        let jimId = req.query.jimId
 
         const todayDate = new Date();
         todayDate.setHours(0, 0, 0, 0);
@@ -17,10 +17,15 @@ const createUpdateAttendence = async (req, res, next) => {
             created_at: { $gte: todayDate }
         });
 
-        if (attendance && attendance.status === "punchIn") {
+        if (attendance) {
+            if (attendance.status === "punchIn"){
             attendance.punchOutTime = new Date();
-            attendance.total_mint_spend = (attendance.punchOutTime - attendance.punchInTime) / 1000 ; // Calculate hours spent
+            attendance.total_mint_spend =attendance.total_mint_spend + (attendance.punchOutTime - attendance.punchInTime) / 1000 ; // Calculate hours spent
             attendance.status = "punchOut";
+            }else{
+                attendance.punchInTime = new Date();
+                attendance.status = "punchIn";
+            }
         } else {
             attendance =await  new Attendance({
                 user: userId,
@@ -33,7 +38,7 @@ const createUpdateAttendence = async (req, res, next) => {
         }
 
         await attendance.save();
-
+        attendance.total_mint_spend.toFixed()
         return res.status(200).send({
             success: true,
             message: "Attendance registered successfully",
@@ -49,7 +54,7 @@ const createUpdateAttendence = async (req, res, next) => {
 const getAttendance = async (req, res, next) => {
     try {
         const userId = req.user.id;
-        let jimId = req.user.BusinessLocation[0];
+        let jimId = req.query.jimId
 
         const todayDate = new Date();
         todayDate.setHours(0, 0, 0, 0);
@@ -68,7 +73,7 @@ const getAttendance = async (req, res, next) => {
 
                 attendance.total_mint_spend = timeSpentInSeconds;
             }
-
+            attendance.total_mint_spend.toFixed()
             return res.status(200).send({
                 success: true,
                 message: "Attendance found successfully",
@@ -89,7 +94,7 @@ const getAttendance = async (req, res, next) => {
 const JimActiveUser = async (req, res, next) => {
     try {
         const userId = req.user.id;
-        let jimId = req.user.BusinessLocation[0];
+        let jimId = req.query.jimId
         const todayDate = new Date();
         todayDate.setHours(0, 0, 0, 0);
 
@@ -99,8 +104,9 @@ const JimActiveUser = async (req, res, next) => {
             created_at: { $gte: todayDate }
         });
         const total_user = await User.find({
-            BusinessLocation: jimId,
+            "BusinessLocation.Gym": jimId,
             status: "active",
+            isJimAdmin: false
         });
 
         const activeUserCount = activeUser.length;

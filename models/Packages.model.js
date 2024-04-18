@@ -15,17 +15,23 @@ const gymPackageSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
-  durationMonths: {
-    type: Number,
+  is_jim_package: {
+    type: Boolean,
     required: true
   },
-  includesClasses: {
-    type: Boolean,
-    default: false
+  type:{
+    type: String,
+    required: false,
+    enum:["custom","other"]
   },
-  classesPerWeek: {
-    type: Number,
-    default: 0
+  is_admin_package: {
+    type: Boolean,
+    required: true
+  },
+  BusinessLocation: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Jim',
+    required: false
   },
   createdAt: {
     type: Date,
@@ -34,6 +40,6 @@ const gymPackageSchema = new mongoose.Schema({
 });
 gymPackageSchema.plugin(mongoosePaginate);
 
-const GymPackage = mongoose.model('GymPackage', gymPackageSchema);
+const Packages = mongoose.model('Packages', gymPackageSchema);
 
-module.exports = GymPackage;
+module.exports = Packages;

@@ -7,9 +7,10 @@ Router.post("/addUser",upload.array("images") ,controller.addUser);
 Router.post("/loginUser", controller.login);
 Router.get("/getAllBusinessUser",verifyToken, controller.getAllByBusinessLocation);
 Router.get("/getOne/:id", controller.getOne);
-Router.delete("/deleteUser/:id",verifyToken, controller.deleteUser);
+Router.put("/deleteUser",verifyToken, controller.deleteUser);
 Router.put("/updateUser",verifyToken, controller.updateUser);
 Router.put("/updatePassword/:id", controller.updatePassword);
+Router.put("/updateUserStatus", controller.updateUserStatus);
 // Router.put("/updateImage/:id", controller.updateImage);
 
 module.exports = Router;
