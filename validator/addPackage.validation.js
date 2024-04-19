@@ -13,7 +13,7 @@ const updatePackage = Joi.object().keys({
 const addPackage = Joi.object().keys({
     name: Joi.string().required().label("name"),
     description: Joi.string().label("description"),
-    user:Joi.string().label("user"),
+    user:Joi.string().allow(null,"").label("user"),
     type: Joi.string().label("description"),
     price: Joi.string().required().label("price"),
     is_jim_package: Joi.boolean().label("is_jim_package"),
