@@ -7,7 +7,7 @@ const verifyToken = (req, res, next) => {
   if (!token) {
     return next(createError(401, 'You are not authenticated!'));
   }
-  jwt.verify(token, process.env.jwt_secret, (error, user) => {
+  jwt.verify(token, "gymmanage", (error, user) => {
     if (error) {
       return next(createError(401, 'Token is not valid'));
     }

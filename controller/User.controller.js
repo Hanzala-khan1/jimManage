@@ -111,7 +111,7 @@ module.exports = {
                BusinessLocation: checkuser.BusinessLocation[0],
                isJimAdmin: checkuser.isJimAdmin
             },
-            process.env.jwt_secret)
+            "gymmanage")
          return res.status(200).send({
             success: true,
             message: "logged in",
