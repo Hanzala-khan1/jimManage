@@ -108,7 +108,7 @@ module.exports = {
             {
                id: checkuser._id,
                isAdmin: checkuser.isAdmin,
-               BusinessLocation: checkuser.BusinessLocation,
+               BusinessLocation: checkuser.BusinessLocation[0],
                isJimAdmin: checkuser.isJimAdmin
             },
             process.env.jwt_secret)

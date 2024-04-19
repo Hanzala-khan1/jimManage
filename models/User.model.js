@@ -17,6 +17,10 @@ const userSchema = new mongoose.Schema({
             ref: 'Packages',
             required: false
         },
+        updated_on: {
+            type: Date,
+            required: false
+        },
     }],
     email: {
         type: String,

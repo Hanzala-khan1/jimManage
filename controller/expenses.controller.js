@@ -39,7 +39,7 @@ const monthEarnings = async (req, res, next) => {
 
         if (user.isJimAdmin) {
             filter.type = "userPayment";
-            filter.BusinessLocation = user.BusinessLocation[0];
+            filter.BusinessLocation = user.BusinessLocation[0].Gym;
         } else if (user.isAdmin) {
             filter.type = "jimPayment";
         } else {
@@ -147,7 +147,7 @@ let getuserDashBoardData = async (req, res, next) => {
 
         if (user.isJimAdmin) {
             monthlyFilter.type = "userPayment";
-            monthlyFilter.BusinessLocation = user.BusinessLocation[0];
+            monthlyFilter.BusinessLocation = user.BusinessLocation[0].Gym;
         } else if (user.isAdmin) {
             monthlyFilter.type = "jimPayment";
         }
