@@ -23,7 +23,8 @@ module.exports = {
                 name: {
                     $regex: '.*' + req.body.name + '.*',
                     $options: 'i',
-                }
+                },
+                BusinessLocation:req.body.BusinessLocation
             })
             if (checkPackage) {
                 return next(createError(404, "A Package with this name already exist"))
@@ -33,6 +34,20 @@ module.exports = {
             }
             if (req.body.user){
                 req.body['type'] = "custom"
+            }
+            if (req.body.is_admin_package ==true) {
+                const getpackage = await Packages.findOne({ is_admin_package: true })
+                const updatedPackage = await Packages.findOneAndUpdate(
+                    { _id: getpackage._id },
+                    { $set: req.body },
+                    { new: true } 
+                );
+                return res.status(200).send({
+                    success: true,
+                    message: "registered",
+                    status: 200,
+                    data: updatedPackage
+                })
             }
             let package = await new Packages(req.body)
             await package.save()
