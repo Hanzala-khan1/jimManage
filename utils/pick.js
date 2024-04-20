@@ -14,7 +14,7 @@ const pick = (object, keys) => {
     }, {});
   };
   
-const App_host= "http://82.127.198.231:8000/"
+const App_host= "http://93.127.198.231:8000/"
   
   module.exports = {
     pick,

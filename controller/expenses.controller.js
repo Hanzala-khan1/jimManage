@@ -239,16 +239,61 @@ let AddTransaction = async (package, userId, BusinessLocation = null, next) => {
 
 }
 
-const dashBoardData = async (req, res, next) => {
+const GymwithLeastandMostUsers = async (req, res, next) => {
     try {
+        // Find all users and populate the gyms they are associated with
+        const users = await User.find().populate('BusinessLocation.Gym');
 
+        // Create a map to track gym counts
+        const gymCountMap = {};
+
+        // Iterate through users to count gyms
+        users.forEach(user => {
+            if (user.BusinessLocation && user.BusinessLocation.length)
+                user.BusinessLocation.forEach(gym => {
+                    if (gym.Gym) {
+                        const gymId = gym.Gym.toString();
+                        if (!gymCountMap[gymId]) {
+                            gymCountMap[gymId] = {
+                                gym: gym,
+                                count: 0
+                            };
+                        }
+                        gymCountMap[gymId].count++;
+                    }
+                });
+        });
+
+        // Convert gymCountMap values to an array
+        const gymsWithCounts = Object.values(gymCountMap);
+
+        // Sort gyms by count (most users to least users)
+        gymsWithCounts.sort((a, b) => b.count - a.count);
+
+        // Get top 4 gyms with the most users
+        const top4GymsWithMostUsers = gymsWithCounts.slice(0, 4);
+
+        // Sort gyms by count (least users to most users)
+        gymsWithCounts.sort((a, b) => a.count - b.count);
+
+        // Get least 4 gyms with the least users
+        const least4GymsWithLeastUsers = gymsWithCounts.slice(0, 4);
+
+        res.status(200).json({
+            most: top4GymsWithMostUsers,
+            least: least4GymsWithLeastUsers
+        });
     } catch (err) {
         return next(err);
     }
-}
+};
+
+
+
 
 module.exports = {
     monthEarnings,
     AddTransaction,
-    getuserDashBoardData
+    getuserDashBoardData,
+    GymwithLeastandMostUsers
 }

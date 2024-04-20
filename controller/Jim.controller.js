@@ -8,6 +8,7 @@ const { upload } = require("../middleware/multer");
 const bcrypt = require("bcrypt");
 const { AddTransaction } = require("./expenses.controller");
 const Packages = require("../models/Packages.model");
+const { addNotification } = require("./Notification.controller");
 require('dotenv').config();
 
 module.exports = {
@@ -83,6 +84,10 @@ module.exports = {
             await businessLocation.save()
 
             await user.save()
+
+            if (req.body.status=="inactive") {
+                await addNotification("gym",businessLocation._id.toString(),`new gym Request from ${req.body.name}`)
+            }
 
             await AddTransaction(req.body.package, user._id.toString(), businessLocation._id.toString(), next)
 

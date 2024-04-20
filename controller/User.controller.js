@@ -9,6 +9,7 @@ const { Adduser, UpdateUser } = require("../validator/user.validation");
 const { AddTransaction } = require("./expenses.controller");
 const { JimActiveUser } = require("./Attendence.controller");
 const Jim = require("../models/Jim.model");
+const { addNotification } = require("./Notification.controller");
 require('dotenv').config();
 
 module.exports = {
@@ -63,7 +64,7 @@ module.exports = {
          if (!req.body.status) {
             req.body["status"] = "inactive"
          }
-
+         
          const salt = bcrypt.genSaltSync(10)
          const hash = await bcrypt.hashSync(req.body.password, salt)
          let user = new User({
@@ -71,6 +72,9 @@ module.exports = {
             password: hash
          })
          await user.save()
+         if (!req.body.status) {
+            await addNotification("user", user_id.toString(),`new user Request from ${req.body.full_name}`)
+         }
 
          await AddTransaction(req.body.package, user._id.toString(), enrollGym, next)
 
